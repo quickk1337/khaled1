@@ -1,0 +1,1249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mooland Farms — Est. 1887</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Lora:ital,wght@0,400;0,500;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+:root {
+  --cream: #f5f0e4;
+  --parchment: #ede5cf;
+  --warm: #d4c4a0;
+  --brown: #5c3d2e;
+  --dark-brown: #2d1a10;
+  --black-patch: #1a1a1a;
+  --white-patch: #faf8f3;
+  --grass: #4a7c3f;
+  --grass-light: #6a9e5a;
+  --mud: #8b6340;
+  --hay: #c9a84c;
+  --red-barn: #8b2e2e;
+  --sky: #c8dff0;
+  --muted: #7a6a56;
+}
+
+/* RESET */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--cream);
+  color: var(--dark-brown);
+  font-family: 'Lora', serif;
+  overflow-x: hidden;
+  cursor: none;
+}
+
+/* ===== CUSTOM COW CURSOR ===== */
+.cursor-cow {
+  position: fixed;
+  pointer-events: none;
+  z-index: 9999;
+  width: 44px;
+  height: 44px;
+  transform: translate(-50%, -50%);
+  transition: transform 0.1s ease;
+}
+.cursor-cow svg { width: 100%; height: 100%; }
+.cursor-cow.clicked { transform: translate(-50%, -50%) scale(0.8) rotate(-15deg); }
+
+/* ===== NOISE TEXTURE ===== */
+body::after {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");
+  pointer-events: none; z-index: 0; opacity: 1;
+}
+
+/* ===== NAV ===== */
+nav {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 20px 60px;
+  background: var(--dark-brown);
+  border-bottom: 3px solid var(--hay);
+}
+.nav-brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem;
+  font-weight: 900;
+  color: var(--cream);
+  letter-spacing: 0.04em;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.nav-brand-cow { font-size: 1.6rem; }
+.nav-links { display: flex; gap: 36px; list-style: none; }
+.nav-links a {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.68rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--warm);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.nav-links a:hover { color: var(--hay); }
+.nav-moo {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--hay);
+  padding: 8px 20px;
+  border: 1px solid var(--hay);
+  border-radius: 2px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.nav-moo:hover { background: var(--hay); color: var(--dark-brown); }
+
+/* ===== HERO ===== */
+.hero {
+  min-height: 100vh;
+  background: var(--dark-brown);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  padding: 120px 60px 80px;
+}
+
+/* Sky gradient */
+.hero-sky {
+  position: absolute; inset: 0;
+  background: linear-gradient(to bottom,
+    #1a3a5c 0%, #2e5f8a 30%, #6b9cc4 55%, #c8dff0 70%,
+    #7ab356 70.1%, #4a7c3f 85%, #2d1a10 100%
+  );
+}
+
+/* Stars */
+.stars {
+  position: absolute; top: 0; left: 0; right: 0; height: 55%;
+  pointer-events: none;
+}
+.star {
+  position: absolute;
+  background: #fff;
+  border-radius: 50%;
+  animation: twinkle 3s infinite;
+}
+@keyframes twinkle { 0%,100%{opacity:0.8} 50%{opacity:0.2} }
+
+/* Moon */
+.moon {
+  position: absolute;
+  top: 8%; right: 15%;
+  width: 70px; height: 70px;
+  border-radius: 50%;
+  background: #faf3c0;
+  box-shadow: 0 0 30px rgba(250,243,192,0.5), 0 0 60px rgba(250,243,192,0.2);
+}
+
+/* Rolling hills */
+.hills {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  pointer-events: none;
+}
+
+/* Barn silhouette */
+.barn {
+  position: absolute;
+  bottom: 28%;
+  right: 8%;
+  pointer-events: none;
+}
+
+/* Cow silhouettes */
+.cow-sil {
+  position: absolute;
+  bottom: 28%;
+  pointer-events: none;
+  animation: graze 8s ease-in-out infinite;
+}
+@keyframes graze {
+  0%,100%{transform:translateX(0)} 50%{transform:translateX(12px)}
+}
+
+.hero-content {
+  position: relative; z-index: 10;
+  max-width: 680px;
+}
+
+.hero-tag {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--hay);
+  margin-bottom: 24px;
+  opacity: 0; animation: fadeUp 1s ease 0.3s forwards;
+}
+.hero-tag::before, .hero-tag::after { content: '✦'; font-size: 0.5rem; }
+
+.hero h1 {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(4rem, 8vw, 8rem);
+  font-weight: 900;
+  line-height: 0.9;
+  color: var(--cream);
+  letter-spacing: -0.02em;
+  opacity: 0; animation: fadeUp 1s ease 0.5s forwards;
+}
+.hero h1 em {
+  font-style: italic;
+  color: var(--hay);
+  display: block;
+}
+
+.hero-desc {
+  margin-top: 28px;
+  font-size: 1rem;
+  line-height: 1.9;
+  color: var(--sky);
+  max-width: 480px;
+  opacity: 0; animation: fadeUp 1s ease 0.7s forwards;
+}
+
+.hero-cta {
+  display: flex; gap: 16px; margin-top: 44px;
+  opacity: 0; animation: fadeUp 1s ease 0.9s forwards;
+}
+.btn-barn {
+  padding: 15px 36px;
+  background: var(--red-barn);
+  color: var(--cream);
+  font-family: 'Playfair Display', serif;
+  font-size: 0.9rem;
+  font-style: italic;
+  text-decoration: none;
+  border: none; cursor: none;
+  transition: all 0.25s;
+  position: relative; overflow: hidden;
+}
+.btn-barn::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: #a83535;
+  transform: translateX(-100%);
+  transition: transform 0.3s;
+}
+.btn-barn:hover::before { transform: translateX(0); }
+.btn-barn span { position: relative; z-index: 1; }
+.btn-hay {
+  padding: 15px 36px;
+  background: transparent;
+  color: var(--cream);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  text-decoration: none;
+  border: 1px solid rgba(255,255,255,0.3);
+  transition: all 0.25s;
+}
+.btn-hay:hover { border-color: var(--hay); color: var(--hay); }
+
+/* SCROLL HINT */
+.hero-scroll {
+  position: absolute; bottom: 32px; left: 60px;
+  display: flex; align-items: center; gap: 12px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  opacity: 0; animation: fadeUp 1s ease 1.3s forwards;
+}
+.scroll-line {
+  width: 1px; height: 40px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+  animation: scrollPulse 2s ease infinite;
+}
+@keyframes scrollPulse { 0%,100%{opacity:0.4} 50%{opacity:1} }
+
+/* ===== MARQUEE ===== */
+.marquee-wrap {
+  background: var(--dark-brown);
+  border-top: 2px solid var(--hay);
+  border-bottom: 2px solid var(--hay);
+  padding: 14px 0;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.marquee-track {
+  display: inline-flex;
+  animation: marquee 20s linear infinite;
+  gap: 0;
+}
+.marquee-track span {
+  font-family: 'Playfair Display', serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: var(--hay);
+  padding: 0 32px;
+}
+.marquee-track .bull { color: var(--cream); font-style: normal; font-size: 0.8rem; }
+@keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
+
+/* ===== ABOUT ===== */
+#about {
+  background: var(--parchment);
+  padding: 120px 60px;
+  position: relative; z-index: 1;
+}
+.about-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 100px; align-items: center;
+}
+.about-img-wrap {
+  position: relative;
+}
+.cow-portrait {
+  width: 100%;
+  aspect-ratio: 4/5;
+  background: var(--dark-brown);
+  border-radius: 2px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12rem;
+  position: relative;
+  overflow: hidden;
+  border: 4px solid var(--brown);
+}
+.cow-portrait::before {
+  content: '';
+  position: absolute; inset: 0;
+  background:
+    radial-gradient(ellipse at 30% 60%, rgba(90,60,40,0.7) 0%, transparent 60%),
+    linear-gradient(to bottom, #1a1a1a, #3d2b1a);
+}
+.cow-portrait-emoji { position: relative; z-index: 1; filter: drop-shadow(0 10px 30px rgba(0,0,0,0.8)); }
+.about-badge {
+  position: absolute;
+  bottom: -20px; right: -20px;
+  width: 100px; height: 100px;
+  background: var(--red-barn);
+  border: 4px solid var(--cream);
+  border-radius: 50%;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-family: 'Playfair Display', serif;
+  color: var(--cream);
+}
+.about-badge-year { font-size: 1.1rem; font-weight: 900; line-height: 1; }
+.about-badge-est { font-size: 0.5rem; letter-spacing: 0.2em; text-transform: uppercase; }
+
+.about-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--mud);
+  margin-bottom: 16px;
+}
+.about-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.2rem, 3.5vw, 3.5rem);
+  font-weight: 900;
+  line-height: 1.1;
+  color: var(--dark-brown);
+  margin-bottom: 28px;
+}
+.about-title em { font-style: italic; color: var(--red-barn); }
+.about-text {
+  font-size: 0.95rem;
+  line-height: 2;
+  color: var(--muted);
+}
+.about-text p+p { margin-top: 16px; }
+.about-divider {
+  width: 60px; height: 3px;
+  background: var(--hay);
+  margin: 28px 0;
+}
+.about-stats {
+  display: flex; gap: 40px; margin-top: 36px;
+}
+.astat-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: var(--red-barn);
+  line-height: 1;
+}
+.astat-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.6rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* ===== BREEDS SECTION ===== */
+#breeds {
+  background: var(--dark-brown);
+  padding: 120px 60px;
+  position: relative; overflow: hidden;
+}
+#breeds::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: repeating-linear-gradient(
+    -45deg,
+    transparent,
+    transparent 40px,
+    rgba(255,255,255,0.015) 40px,
+    rgba(255,255,255,0.015) 80px
+  );
+}
+.breeds-inner { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
+.breeds-header { margin-bottom: 70px; }
+.section-label-light {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem; letter-spacing: 0.3em; text-transform: uppercase;
+  color: var(--hay); margin-bottom: 16px;
+}
+.section-title-light {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.2rem, 3.5vw, 3.5rem);
+  font-weight: 900; color: var(--cream); line-height: 1.1;
+}
+.section-title-light em { font-style: italic; color: var(--hay); }
+
+.breeds-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2px;
+}
+.breed-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 48px 36px;
+  transition: all 0.35s;
+  position: relative;
+  overflow: hidden;
+}
+.breed-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  background: var(--hay);
+  transform: scaleX(0); transform-origin: left;
+  transition: transform 0.4s;
+}
+.breed-card:hover { background: rgba(255,255,255,0.08); transform: translateY(-6px); }
+.breed-card:hover::before { transform: scaleX(1); }
+.breed-emoji { font-size: 3.5rem; display: block; margin-bottom: 20px; }
+.breed-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.4rem; font-weight: 700; color: var(--cream); margin-bottom: 6px;
+}
+.breed-origin {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem; letter-spacing: 0.15em; text-transform: uppercase;
+  color: var(--hay); margin-bottom: 16px;
+}
+.breed-desc { font-size: 0.82rem; line-height: 1.8; color: var(--warm); }
+.breed-tags { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 20px; }
+.breed-tag {
+  padding: 4px 12px;
+  background: rgba(201,168,76,0.15);
+  border: 1px solid rgba(201,168,76,0.3);
+  border-radius: 100px;
+  font-family: 'DM Mono', monospace;
+  font-size: 0.58rem; letter-spacing: 0.1em; color: var(--hay);
+}
+
+/* ===== FARM LIFE ===== */
+#farmlife {
+  background: var(--cream);
+  padding: 120px 60px;
+}
+.farmlife-inner { max-width: 1200px; margin: 0 auto; }
+.farmlife-header { text-align: center; margin-bottom: 80px; }
+.farmlife-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.5rem, 4vw, 4rem);
+  font-weight: 900; color: var(--dark-brown); line-height: 1.1;
+}
+.farmlife-title em { font-style: italic; color: var(--grass); }
+.farmlife-sub {
+  max-width: 500px; margin: 16px auto 0;
+  font-size: 0.9rem; line-height: 1.9; color: var(--muted);
+}
+.timeline {
+  position: relative; padding-left: 40px;
+  max-width: 800px; margin: 0 auto;
+}
+.timeline::before {
+  content: '';
+  position: absolute; left: 0; top: 0; bottom: 0; width: 2px;
+  background: linear-gradient(to bottom, var(--hay), var(--grass), var(--brown));
+}
+.tl-entry { position: relative; padding-bottom: 56px; }
+.tl-entry:last-child { padding-bottom: 0; }
+.tl-dot {
+  position: absolute; left: -48px; top: 4px;
+  width: 16px; height: 16px; border-radius: 50%;
+  background: var(--hay); border: 3px solid var(--cream);
+  box-shadow: 0 0 0 3px var(--hay);
+}
+.tl-time {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--mud); margin-bottom: 8px;
+}
+.tl-title {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.3rem; font-weight: 700; color: var(--dark-brown); margin-bottom: 8px;
+}
+.tl-desc { font-size: 0.85rem; line-height: 1.85; color: var(--muted); max-width: 580px; }
+.tl-icon { font-size: 1.4rem; display: inline-block; margin-right: 8px; }
+
+/* ===== PRODUCTS ===== */
+#products {
+  background: var(--parchment);
+  padding: 120px 60px;
+}
+.products-inner { max-width: 1200px; margin: 0 auto; }
+.products-header { margin-bottom: 70px; }
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+.product-card {
+  background: var(--cream);
+  border: 2px solid var(--warm);
+  padding: 36px 24px 28px;
+  text-align: center;
+  transition: all 0.3s;
+  position: relative;
+}
+.product-card:hover {
+  border-color: var(--brown);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 50px rgba(45,26,16,0.15);
+}
+.product-emoji { font-size: 3rem; display: block; margin-bottom: 16px; }
+.product-name {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.1rem; font-weight: 700; color: var(--dark-brown); margin-bottom: 8px;
+}
+.product-desc { font-size: 0.75rem; line-height: 1.7; color: var(--muted); }
+.product-ribbon {
+  position: absolute; top: 16px; right: -4px;
+  background: var(--red-barn); color: var(--cream);
+  font-family: 'DM Mono', monospace;
+  font-size: 0.55rem; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 4px 12px;
+}
+.product-ribbon::after {
+  content: '';
+  position: absolute; bottom: -4px; right: 0;
+  border-left: 4px solid #5a1e1e;
+  border-bottom: 4px solid transparent;
+}
+
+/* ===== COW FACTS ===== */
+#facts {
+  background: var(--grass);
+  padding: 100px 60px;
+  position: relative; overflow: hidden;
+}
+#facts::before {
+  content: '🌾';
+  position: absolute; font-size: 20rem; opacity: 0.05;
+  right: -2rem; bottom: -4rem; pointer-events: none;
+}
+.facts-inner { max-width: 1200px; margin: 0 auto; }
+.facts-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 3vw, 3rem);
+  font-weight: 900; color: var(--cream); margin-bottom: 56px;
+  text-align: center;
+}
+.facts-title em { font-style: italic; color: var(--hay); }
+.facts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+}
+.fact-card {
+  background: rgba(255,255,255,0.12);
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 4px;
+  padding: 36px 28px;
+  backdrop-filter: blur(4px);
+  transition: all 0.3s;
+}
+.fact-card:hover { background: rgba(255,255,255,0.2); transform: translateY(-4px); }
+.fact-num {
+  font-family: 'Playfair Display', serif;
+  font-size: 2.8rem; font-weight: 900; color: var(--hay); line-height: 1;
+  margin-bottom: 8px;
+}
+.fact-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase;
+  color: var(--cream); opacity: 0.7; margin-bottom: 10px;
+}
+.fact-desc { font-size: 0.8rem; line-height: 1.75; color: rgba(255,255,255,0.8); }
+
+/* ===== GALLERY / PATTERN ===== */
+#pattern {
+  background: var(--dark-brown);
+  padding: 80px 0;
+  overflow: hidden;
+}
+.cow-pattern-row {
+  display: flex;
+  gap: 0;
+  white-space: nowrap;
+  overflow: hidden;
+}
+.cow-pattern-row:nth-child(2) { margin-top: -10px; }
+.pattern-cell {
+  flex-shrink: 0;
+  width: 100px; height: 100px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.8rem;
+  border: 1px solid rgba(255,255,255,0.05);
+  transition: all 0.2s;
+}
+.pattern-cell:hover { background: rgba(201,168,76,0.2); transform: scale(1.1); z-index: 2; }
+.pattern-cell.black { background: rgba(0,0,0,0.4); }
+.pattern-cell.white { background: rgba(255,255,255,0.04); }
+
+/* ===== CONTACT ===== */
+#contact {
+  background: var(--cream);
+  padding: 120px 60px;
+}
+.contact-inner {
+  max-width: 1100px; margin: 0 auto;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 100px; align-items: start;
+}
+.contact-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.5rem, 4vw, 4rem);
+  font-weight: 900; color: var(--dark-brown); line-height: 1;
+  margin-bottom: 24px;
+}
+.contact-title em { font-style: italic; color: var(--red-barn); }
+.contact-desc { font-size: 0.9rem; line-height: 1.9; color: var(--muted); margin-bottom: 40px; }
+.contact-items { display: flex; flex-direction: column; gap: 16px; }
+.ci {
+  display: flex; align-items: center; gap: 16px;
+  padding: 18px 20px;
+  background: var(--parchment);
+  border: 1px solid var(--warm);
+  transition: all 0.2s;
+}
+.ci:hover { border-color: var(--brown); transform: translateX(6px); }
+.ci-icon { font-size: 1.3rem; }
+.ci-label { font-family: 'DM Mono', monospace; font-size: 0.58rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mud); }
+.ci-val { font-family: 'Lora', serif; font-size: 0.9rem; color: var(--dark-brown); }
+
+.contact-form { display: flex; flex-direction: column; gap: 16px; }
+.cf-field { display: flex; flex-direction: column; gap: 7px; }
+.cf-field label { font-family: 'DM Mono', monospace; font-size: 0.6rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--mud); }
+.cf-field input, .cf-field textarea, .cf-field select {
+  background: var(--parchment);
+  border: 2px solid var(--warm);
+  color: var(--dark-brown);
+  padding: 13px 16px;
+  font-family: 'Lora', serif;
+  font-size: 0.88rem;
+  outline: none;
+  transition: border-color 0.2s;
+  resize: none;
+}
+.cf-field input:focus, .cf-field textarea:focus, .cf-field select:focus { border-color: var(--brown); }
+.cf-field textarea { height: 120px; }
+.btn-contact {
+  padding: 16px 36px;
+  background: var(--dark-brown);
+  color: var(--cream);
+  font-family: 'Playfair Display', serif;
+  font-style: italic; font-size: 1rem;
+  border: none; cursor: none; transition: all 0.25s;
+}
+.btn-contact:hover { background: var(--red-barn); }
+
+/* ===== FOOTER ===== */
+footer {
+  background: var(--dark-brown);
+  border-top: 3px solid var(--hay);
+  padding: 60px;
+}
+.footer-inner {
+  max-width: 1200px; margin: 0 auto;
+  display: grid; grid-template-columns: 2fr 1fr 1fr;
+  gap: 60px;
+}
+.footer-brand {
+  font-family: 'Playfair Display', serif;
+  font-size: 2rem; font-weight: 900; color: var(--cream);
+}
+.footer-brand em { font-style: italic; color: var(--hay); }
+.footer-tagline { font-size: 0.82rem; line-height: 1.8; color: var(--warm); margin-top: 12px; }
+.footer-col-title {
+  font-family: 'DM Mono', monospace;
+  font-size: 0.62rem; letter-spacing: 0.25em; text-transform: uppercase;
+  color: var(--hay); margin-bottom: 20px;
+}
+.footer-links { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.footer-links a {
+  font-size: 0.82rem; color: var(--warm); text-decoration: none; transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--cream); }
+.footer-bottom {
+  max-width: 1200px; margin: 40px auto 0;
+  padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1);
+  display: flex; justify-content: space-between; align-items: center;
+}
+.footer-copy { font-family: 'DM Mono', monospace; font-size: 0.62rem; color: var(--muted); }
+
+/* ===== ANIMATIONS ===== */
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+.reveal { opacity:0; transform:translateY(32px); transition:opacity 0.8s ease,transform 0.8s ease; }
+.reveal.visible { opacity:1; transform:translateY(0); }
+.reveal-delay-1 { transition-delay: 0.1s; }
+.reveal-delay-2 { transition-delay: 0.2s; }
+.reveal-delay-3 { transition-delay: 0.3s; }
+
+/* ===== RESPONSIVE ===== */
+@media(max-width:1024px){
+  .breeds-grid,.products-grid{grid-template-columns:1fr 1fr}
+  .about-inner,.contact-inner{grid-template-columns:1fr;gap:60px}
+  .facts-grid{grid-template-columns:1fr 1fr}
+  .footer-inner{grid-template-columns:1fr 1fr}
+}
+@media(max-width:768px){
+  nav{padding:16px 24px}
+  .nav-links{display:none}
+  .hero,.about,.breeds,.farmlife,.products,.facts,.contact,footer,.section{padding-left:24px;padding-right:24px}
+  #about,#breeds,#farmlife,#products,#facts,#contact{padding:80px 24px}
+  .breeds-grid,.products-grid,.facts-grid{grid-template-columns:1fr}
+  body{cursor:auto}
+  .cursor-cow{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- COW CURSOR -->
+<div class="cursor-cow" id="cowCursor">
+  <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- Cow head cursor -->
+    <circle cx="22" cy="24" r="14" fill="#f5f0e4" stroke="#2d1a10" stroke-width="1.5"/>
+    <!-- Black patches -->
+    <ellipse cx="16" cy="20" rx="5" ry="4" fill="#1a1a1a"/>
+    <ellipse cx="28" cy="26" rx="4" ry="5" fill="#1a1a1a"/>
+    <ellipse cx="22" cy="18" rx="3" ry="2.5" fill="#1a1a1a"/>
+    <!-- Ears -->
+    <ellipse cx="8" cy="20" rx="4" ry="5" fill="#f5f0e4" stroke="#2d1a10" stroke-width="1.5"/>
+    <ellipse cx="36" cy="20" rx="4" ry="5" fill="#f5f0e4" stroke="#2d1a10" stroke-width="1.5"/>
+    <ellipse cx="8" cy="20" rx="2" ry="3" fill="#e8b4b8"/>
+    <ellipse cx="36" cy="20" rx="2" ry="3" fill="#e8b4b8"/>
+    <!-- Horns -->
+    <path d="M11 14 Q8 6 5 8" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+    <path d="M33 14 Q36 6 39 8" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+    <!-- Eyes -->
+    <circle cx="17" cy="22" r="2.5" fill="white"/>
+    <circle cx="27" cy="22" r="2.5" fill="white"/>
+    <circle cx="18" cy="22" r="1.2" fill="#1a1a1a"/>
+    <circle cx="28" cy="22" r="1.2" fill="#1a1a1a"/>
+    <circle cx="18.5" cy="21.5" r="0.4" fill="white"/>
+    <circle cx="28.5" cy="21.5" r="0.4" fill="white"/>
+    <!-- Nose -->
+    <ellipse cx="22" cy="30" rx="6" ry="4" fill="#e8b4b8"/>
+    <circle cx="20" cy="30" r="1.2" fill="#c47d8a"/>
+    <circle cx="24" cy="30" r="1.2" fill="#c47d8a"/>
+  </svg>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-brand">
+    <span class="nav-brand-cow">🐄</span>
+    Mooland Farms
+  </a>
+  <ul class="nav-links">
+    <li><a href="#about">Our Story</a></li>
+    <li><a href="#breeds">Breeds</a></li>
+    <li><a href="#farmlife">Farm Life</a></li>
+    <li><a href="#products">Products</a></li>
+    <li><a href="#facts">Fun Facts</a></li>
+  </ul>
+  <a href="#contact" class="nav-moo">Visit Us</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="home">
+  <div class="hero-sky"></div>
+
+  <!-- Stars -->
+  <div class="stars" id="stars"></div>
+  <div class="moon"></div>
+
+  <!-- SVG Scene -->
+  <svg class="hills" viewBox="0 0 1440 320" preserveAspectRatio="none" style="height:320px;position:absolute;bottom:0;">
+    <!-- Back hills -->
+    <path d="M0,220 Q200,140 400,180 Q600,220 800,160 Q1000,100 1200,150 Q1350,180 1440,140 L1440,320 L0,320 Z" fill="#3a6330" opacity="0.6"/>
+    <!-- Mid hills -->
+    <path d="M0,260 Q180,200 360,230 Q540,260 720,210 Q900,160 1080,200 Q1260,240 1440,200 L1440,320 L0,320 Z" fill="#4a7c3f"/>
+    <!-- Fence -->
+    <g stroke="#5c3d2e" stroke-width="3">
+      <line x1="60" y1="270" x2="60" y2="310"/>
+      <line x1="120" y1="265" x2="120" y2="305"/>
+      <line x1="180" y1="268" x2="180" y2="308"/>
+      <line x1="240" y1="263" x2="240" y2="303"/>
+      <line x1="300" y1="266" x2="300" y2="306"/>
+      <line x1="40" y1="278" x2="310" y2="272"/>
+      <line x1="40" y1="290" x2="310" y2="284"/>
+    </g>
+    <!-- Ground -->
+    <path d="M0,295 L1440,295 L1440,320 L0,320 Z" fill="#2d1a10"/>
+  </svg>
+
+  <!-- Barn SVG -->
+  <svg class="barn" viewBox="0 0 200 180" style="width:220px;opacity:0.85">
+    <polygon points="100,10 0,80 200,80" fill="#5a1e1e"/>
+    <rect x="20" y="80" width="160" height="100" fill="#6b2424"/>
+    <rect x="80" y="130" width="40" height="50" fill="#2d1a10"/>
+    <rect x="30" y="100" width="40" height="30" fill="#2d1a10"/>
+    <rect x="130" y="100" width="40" height="30" fill="#2d1a10"/>
+    <!-- X on doors -->
+    <line x1="30" y1="100" x2="70" y2="130" stroke="#c9a84c" stroke-width="2"/>
+    <line x1="70" y1="100" x2="30" y2="130" stroke="#c9a84c" stroke-width="2"/>
+    <!-- Silo -->
+    <rect x="175" y="50" width="25" height="130" fill="#4a4a4a"/>
+    <ellipse cx="187" cy="50" rx="12" ry="8" fill="#5a5a5a"/>
+  </svg>
+
+  <!-- Cow silhouettes -->
+  <svg style="position:absolute;bottom:28%;left:52%;width:100px;animation:graze 7s ease-in-out infinite" viewBox="0 0 100 60">
+    <ellipse cx="50" cy="40" rx="30" ry="18" fill="#f5f0e4" opacity="0.9"/>
+    <ellipse cx="24" cy="32" rx="12" ry="10" fill="#f5f0e4" opacity="0.9"/>
+    <rect x="28" y="54" width="6" height="12" fill="#e8e0cc" opacity="0.9" rx="2"/>
+    <rect x="38" y="56" width="6" height="10" fill="#e8e0cc" opacity="0.9" rx="2"/>
+    <rect x="55" y="56" width="6" height="10" fill="#e8e0cc" opacity="0.9" rx="2"/>
+    <rect x="65" y="54" width="6" height="12" fill="#e8e0cc" opacity="0.9" rx="2"/>
+    <ellipse cx="22" cy="28" rx="5" ry="4" fill="#1a1a1a" opacity="0.6"/>
+    <circle cx="18" cy="29" r="1.5" fill="white"/>
+  </svg>
+
+  <div class="hero-content">
+    <div class="hero-tag">Est. 1887 · Mooland Valley</div>
+    <h1>Where the<br><em>pasture</em><br>never ends.</h1>
+    <p class="hero-desc">Five generations of proud farming. The finest cattle, the greenest fields, and a tradition of honest, heartfelt husbandry that's never gone to pasture.</p>
+    <div class="hero-cta">
+      <a href="#about" class="btn-barn"><span>Explore the Farm</span></a>
+      <a href="#products" class="btn-hay">Our Products</a>
+    </div>
+  </div>
+
+  <div class="hero-scroll">
+    <div class="scroll-line"></div>
+    Scroll down
+  </div>
+</section>
+
+<!-- MARQUEE -->
+<div class="marquee-wrap">
+  <div class="marquee-track" id="marquee">
+    <span>🐄 Mooland Farms</span><span class="bull">✦</span>
+    <span>🌾 Est. 1887</span><span class="bull">✦</span>
+    <span>🍼 Fresh Dairy Daily</span><span class="bull">✦</span>
+    <span>🐂 Heritage Breeds</span><span class="bull">✦</span>
+    <span>🏡 Family Owned</span><span class="bull">✦</span>
+    <span>🌿 Pasture Raised</span><span class="bull">✦</span>
+    <span>🥛 Straight from the Udder</span><span class="bull">✦</span>
+    <span>🐄 Mooland Farms</span><span class="bull">✦</span>
+    <span>🌾 Est. 1887</span><span class="bull">✦</span>
+    <span>🍼 Fresh Dairy Daily</span><span class="bull">✦</span>
+    <span>🐂 Heritage Breeds</span><span class="bull">✦</span>
+    <span>🏡 Family Owned</span><span class="bull">✦</span>
+    <span>🌿 Pasture Raised</span><span class="bull">✦</span>
+    <span>🥛 Straight from the Udder</span><span class="bull">✦</span>
+  </div>
+</div>
+
+<!-- ABOUT -->
+<section id="about">
+<div class="about-inner" style="max-width:1200px;margin:0 auto;padding:120px 60px;display:grid;grid-template-columns:1fr 1fr;gap:100px;align-items:center">
+  <div class="about-img-wrap reveal">
+    <div class="cow-portrait">
+      <span class="cow-portrait-emoji">🐄</span>
+    </div>
+    <div class="about-badge">
+      <span class="about-badge-est">Est.</span>
+      <span class="about-badge-year">1887</span>
+    </div>
+  </div>
+  <div class="reveal reveal-delay-1">
+    <div class="about-label">✦ Our Story</div>
+    <h2 class="about-title">Born in the <em>mud,</em> raised with love.</h2>
+    <div class="about-divider"></div>
+    <div class="about-text">
+      <p>Mooland Farms began with one stubborn Holstein named Beatrice and a dream bigger than the barn she slept in. Five generations later, we still wake up before dawn, still do things the slow way, and still believe the best things in life come from a cow.</p>
+      <p>Our herd roams over 800 acres of lush valley pasture, grazing on nothing but grass, sunshine, and the occasional wildflower. No shortcuts. No compromises. Just honest farming the way it was always meant to be done.</p>
+    </div>
+    <div class="about-stats">
+      <div>
+        <div class="astat-num">800</div>
+        <div class="astat-label">Acres of pasture</div>
+      </div>
+      <div>
+        <div class="astat-num">240</div>
+        <div class="astat-label">Head of cattle</div>
+      </div>
+      <div>
+        <div class="astat-num">5</div>
+        <div class="astat-label">Generations</div>
+      </div>
+    </div>
+  </div>
+</div>
+</section>
+
+<!-- BREEDS -->
+<section id="breeds">
+  <div class="breeds-inner">
+    <div class="breeds-header reveal">
+      <div class="section-label-light">✦ Our Herd</div>
+      <h2 class="section-title-light">Celebrated <em>breeds</em> of the valley.</h2>
+    </div>
+    <div class="breeds-grid">
+      <div class="breed-card reveal">
+        <span class="breed-emoji">🐄</span>
+        <div class="breed-name">Holstein-Friesian</div>
+        <div class="breed-origin">Netherlands · Dairy Queen</div>
+        <p class="breed-desc">The iconic black-and-white beauty. Our most prolific dairy producer, capable of yielding up to 25,000 litres annually. Gentle-natured and always first in line at milking time.</p>
+        <div class="breed-tags"><span class="breed-tag">Dairy</span><span class="breed-tag">Gentle</span><span class="breed-tag">High Yield</span></div>
+      </div>
+      <div class="breed-card reveal reveal-delay-1">
+        <span class="breed-emoji">🐂</span>
+        <div class="breed-name">Hereford</div>
+        <div class="breed-origin">England · The Red Baron</div>
+        <p class="breed-desc">Rugged, robust, and utterly magnificent. Our Herefords thrive in any weather, convert pasture to beef with remarkable efficiency, and have the friendliest eyes you'll ever look into.</p>
+        <div class="breed-tags"><span class="breed-tag">Beef</span><span class="breed-tag">Hardy</span><span class="breed-tag">Docile</span></div>
+      </div>
+      <div class="breed-card reveal reveal-delay-2">
+        <span class="breed-emoji">🦬</span>
+        <div class="breed-name">Charolais</div>
+        <div class="breed-origin">France · The White Giant</div>
+        <p class="breed-desc">Magnificent cream-white giants from the Burgundy region. Prized for their exceptional muscling and lean beef quality. Our Charolais bulls are the aristocrats of the herd.</p>
+        <div class="breed-tags"><span class="breed-tag">Beef</span><span class="breed-tag">Large Frame</span><span class="breed-tag">Premium</span></div>
+      </div>
+      <div class="breed-card reveal">
+        <span class="breed-emoji">🐃</span>
+        <div class="breed-name">Angus</div>
+        <div class="breed-origin">Scotland · The Black Pearl</div>
+        <p class="breed-desc">Sleek, hornless, and bred for the finest marbled beef on the table. Our Aberdeen Angus are the pride of our beef herd — slow-grown on pasture for unmatched flavour.</p>
+        <div class="breed-tags"><span class="breed-tag">Beef</span><span class="breed-tag">Marbled</span><span class="breed-tag">Polled</span></div>
+      </div>
+      <div class="breed-card reveal reveal-delay-1">
+        <span class="breed-emoji">🐄</span>
+        <div class="breed-name">Jersey</div>
+        <div class="breed-origin">Channel Islands · The Cream Dream</div>
+        <p class="breed-desc">Small in stature, enormous in character. Jersey milk is the richest, most golden-hued dairy you'll ever taste — with butterfat so high it's basically dessert straight from the field.</p>
+        <div class="breed-tags"><span class="breed-tag">Dairy</span><span class="breed-tag">Rich Milk</span><span class="breed-tag">Compact</span></div>
+      </div>
+      <div class="breed-card reveal reveal-delay-2">
+        <span class="breed-emoji">🐂</span>
+        <div class="breed-name">Limousin</div>
+        <div class="breed-origin">France · The Golden One</div>
+        <p class="breed-desc">Golden-coated and statuesque. Limousins are known for their exceptional meat yield ratio and ease of calving. Their calm temperament makes them a joy to work with every single day.</p>
+        <div class="breed-tags"><span class="breed-tag">Beef</span><span class="breed-tag">Efficient</span><span class="breed-tag">Calm</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FARM LIFE -->
+<section id="farmlife">
+  <div class="farmlife-inner">
+    <div class="farmlife-header reveal">
+      <div class="about-label" style="text-align:center">✦ A Day on the Farm</div>
+      <h2 class="farmlife-title">Life runs on <em>moo time.</em></h2>
+      <p class="farmlife-sub">On a working cattle farm, every hour has purpose. Here's what a day at Mooland looks like from first light to last lantern.</p>
+    </div>
+    <div class="timeline">
+      <div class="tl-entry reveal">
+        <div class="tl-dot"></div>
+        <div class="tl-time">04:30 AM</div>
+        <div class="tl-title"><span class="tl-icon">🌅</span>First Milking</div>
+        <p class="tl-desc">Before the rest of the world stirs, our dairy herd is already lined up at the parlour. The rhythm of the milking machines, the steam in the cold air, the warm smell of hay — there's nothing else like it.</p>
+      </div>
+      <div class="tl-entry reveal">
+        <div class="tl-dot"></div>
+        <div class="tl-time">06:00 AM</div>
+        <div class="tl-title"><span class="tl-icon">🌿</span>Morning Turnout</div>
+        <p class="tl-desc">The herd heads to pasture. Watching 240 cattle stream out across dewy grass as the sun comes up — that's our favourite moment of every day, without exception.</p>
+      </div>
+      <div class="tl-entry reveal">
+        <div class="tl-dot"></div>
+        <div class="tl-time">09:00 AM</div>
+        <div class="tl-title"><span class="tl-icon">🔧</span>Maintenance & Vet Rounds</div>
+        <p class="tl-desc">Fences checked, troughs cleaned, any animals needing attention seen to. A healthy herd is a happy herd — and our vet has known half these cows since they were calves.</p>
+      </div>
+      <div class="tl-entry reveal">
+        <div class="tl-dot"></div>
+        <div class="tl-time">03:30 PM</div>
+        <div class="tl-title"><span class="tl-icon">🍼</span>Evening Milking</div>
+        <p class="tl-desc">The dairy girls come home. Second milking of the day, followed by fresh bedding, feed supplements for the calves, and the quiet satisfaction of a day's work done right.</p>
+      </div>
+      <div class="tl-entry reveal">
+        <div class="tl-dot"></div>
+        <div class="tl-time">08:00 PM</div>
+        <div class="tl-title"><span class="tl-icon">🌙</span>Night Watch</div>
+        <p class="tl-desc">Calving season means someone's always on watch. There's a particular kind of magic in sitting with a new calf in a lantern-lit barn at midnight, knowing you've brought new life into the world.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRODUCTS -->
+<section id="products">
+  <div class="products-inner">
+    <div class="products-header reveal">
+      <div class="about-label">✦ From Our Farm</div>
+      <h2 class="about-title">Pure. Simple. <em>Delicious.</em></h2>
+    </div>
+    <div class="products-grid">
+      <div class="product-card reveal">
+        <div class="product-ribbon">Best Seller</div>
+        <span class="product-emoji">🥛</span>
+        <div class="product-name">Raw Whole Milk</div>
+        <p class="product-desc">Straight from our Holstein herd. Non-homogenised, full-cream, utterly gorgeous. Delivered fresh every morning.</p>
+      </div>
+      <div class="product-card reveal reveal-delay-1">
+        <span class="product-emoji">🧈</span>
+        <div class="product-name">Cultured Butter</div>
+        <p class="product-desc">Hand-churned from Jersey cream. A golden, grassy butter that'll ruin you for anything else. Salt or unsalted — your call.</p>
+      </div>
+      <div class="product-card reveal reveal-delay-2">
+        <div class="product-ribbon">Seasonal</div>
+        <span class="product-emoji">🧀</span>
+        <div class="product-name">Aged Farmhouse Cheddar</div>
+        <p class="product-desc">Cloth-bound and cave-aged for 18 months. Sharp, complex, crumbly at the edges. Worth the wait.</p>
+      </div>
+      <div class="product-card reveal reveal-delay-3">
+        <span class="product-emoji">🥩</span>
+        <div class="product-name">Grass-Fed Beef</div>
+        <p class="product-desc">Angus and Hereford cuts. Slow-grown on pasture, dry-aged for 28 days. The real taste of honest farming.</p>
+      </div>
+      <div class="product-card reveal">
+        <span class="product-emoji">🍦</span>
+        <div class="product-name">Clotted Cream</div>
+        <p class="product-desc">Pure Jersey richness, slow-scalded in the traditional way. For scones, for strawberries, or just for the spoon.</p>
+      </div>
+      <div class="product-card reveal reveal-delay-1">
+        <div class="product-ribbon">New</div>
+        <span class="product-emoji">🫙</span>
+        <div class="product-name">Raw Milk Yoghurt</div>
+        <p class="product-desc">Live cultures, no thickeners, no nonsense. Tart, creamy, alive. The way yoghurt tasted before supermarkets got hold of it.</p>
+      </div>
+      <div class="product-card reveal reveal-delay-2">
+        <span class="product-emoji">🐄</span>
+        <div class="product-name">Hide & Leather Goods</div>
+        <p class="product-desc">Nothing wasted. Handcrafted belts, wallets and straps from our own hides. Built to last a lifetime — like everything we do.</p>
+      </div>
+      <div class="product-card reveal reveal-delay-3">
+        <span class="product-emoji">🌾</span>
+        <div class="product-name">Organic Hay Bales</div>
+        <p class="product-desc">Sustainably grown and harvested from our meadows. For equestrians, smallholders, and anyone who needs a good roll in the hay.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COW FACTS -->
+<section id="facts">
+  <div class="facts-inner">
+    <h2 class="facts-title reveal">Things you didn't know you <em>needed to know.</em></h2>
+    <div class="facts-grid">
+      <div class="fact-card reveal">
+        <div class="fact-num">27L</div>
+        <div class="fact-label">Daily milk production</div>
+        <p class="fact-desc">A single Holstein can produce up to 27 litres of milk per day — enough to fill over 50 pint glasses. They're basically walking dairy factories with a personality.</p>
+      </div>
+      <div class="fact-card reveal reveal-delay-1">
+        <div class="fact-num">360°</div>
+        <div class="fact-label">Vision range</div>
+        <p class="fact-desc">Cows have nearly panoramic vision, seeing almost all the way around their heads. The only blind spot is directly behind them — which is why you should never sneak up on one.</p>
+      </div>
+      <div class="fact-card reveal reveal-delay-2">
+        <div class="fact-num">8hrs</div>
+        <div class="fact-label">Daily chewing time</div>
+        <p class="fact-desc">A cow spends up to 8 hours a day chewing cud — re-chewing partially digested food. It's meditative, really. They have four stomach chambers to get the job properly done.</p>
+      </div>
+      <div class="fact-card reveal">
+        <div class="fact-num">200km</div>
+        <div class="fact-label">Smell detection range</div>
+        <p class="fact-desc">Cows can smell things up to 10 kilometres away — and some studies suggest they can detect scents from even further. They know when rain is coming long before you do.</p>
+      </div>
+      <div class="fact-card reveal reveal-delay-1">
+        <div class="fact-num">♫</div>
+        <div class="fact-label">Music lovers</div>
+        <p class="fact-desc">Research has shown cows produce more milk when listening to slow, calm music — particularly classical pieces. Our herd has eclectic taste. Current favourite: Debussy's Clair de Lune.</p>
+      </div>
+      <div class="fact-card reveal reveal-delay-2">
+        <div class="fact-num">40</div>
+        <div class="fact-label">Moos per day</div>
+        <p class="fact-desc">Cows have distinct vocalisations for different situations — hunger, distress, greeting, or just saying hello. A mother cow and her calf can identify each other by voice alone within hours of birth.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COW PATTERN -->
+<section id="pattern">
+  <div id="patternGrid"></div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <div class="contact-inner">
+    <div class="reveal">
+      <h2 class="contact-title">Come say <em>moo.</em></h2>
+      <p class="contact-desc">Whether you're after a farm tour, a bulk order, or just want to come stand in a field for a bit — the gate's always open. We're a friendly bunch, cows included.</p>
+      <div class="contact-items">
+        <div class="ci"><span class="ci-icon">📍</span><div><div class="ci-label">Address</div><div class="ci-val">Mooland Valley Farm, Meadow Lane, Countryside</div></div></div>
+        <div class="ci"><span class="ci-icon">📞</span><div><div class="ci-label">Phone</div><div class="ci-val">+44 (0) 1234 567 890</div></div></div>
+        <div class="ci"><span class="ci-icon">📧</span><div><div class="ci-label">Email</div><div class="ci-val">hello@moolandfarms.com</div></div></div>
+        <div class="ci"><span class="ci-icon">🕐</span><div><div class="ci-label">Farm Shop Hours</div><div class="ci-val">Mon–Sat: 7am – 6pm · Sun: 8am – 2pm</div></div></div>
+      </div>
+    </div>
+    <div class="reveal reveal-delay-1">
+      <form class="contact-form" action="https://formspree.io/f/YOUR_FORM_ID" method="POST">
+        <div class="cf-field">
+          <label>Your name</label>
+          <input type="text" name="name" placeholder="Old MacDonald" required>
+        </div>
+        <div class="cf-field">
+          <label>Email</label>
+          <input type="email" name="email" placeholder="you@farm.com" required>
+        </div>
+        <div class="cf-field">
+          <label>Reason for visit</label>
+          <select name="reason">
+            <option>Farm tour</option>
+            <option>Product order</option>
+            <option>Just to pet the cows</option>
+            <option>Bulk / wholesale enquiry</option>
+            <option>Press / media</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="cf-field">
+          <label>Message</label>
+          <textarea name="message" placeholder="Tell us what brings you to the valley…"></textarea>
+        </div>
+        <button type="submit" class="btn-contact">Send it over →</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div>
+      <div class="footer-brand">Moo<em>land</em> 🐄</div>
+      <p class="footer-tagline">Five generations of honest farming in the valley. We believe in good land, good cattle, and good food — nothing more, nothing less.</p>
+    </div>
+    <div>
+      <div class="footer-col-title">Quick links</div>
+      <ul class="footer-links">
+        <li><a href="#about">Our Story</a></li>
+        <li><a href="#breeds">Our Breeds</a></li>
+        <li><a href="#farmlife">Farm Life</a></li>
+        <li><a href="#products">Products</a></li>
+        <li><a href="#contact">Visit Us</a></li>
+      </ul>
+    </div>
+    <div>
+      <div class="footer-col-title">What we do</div>
+      <ul class="footer-links">
+        <li><a href="#">Dairy Production</a></li>
+        <li><a href="#">Grass-Fed Beef</a></li>
+        <li><a href="#">Farm Tours</a></li>
+        <li><a href="#">Wholesale</a></li>
+        <li><a href="#">Seasonal Events</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-copy">© 2026 Mooland Farms. Est. 1887. All rights reserved. 🐄</div>
+    <div class="footer-copy">Made with love & manure.</div>
+  </div>
+</footer>
+
+<script>
+  // Custom cow cursor
+  const cowCursor = document.getElementById('cowCursor');
+  let cx = -100, cy = -100;
+  document.addEventListener('mousemove', e => {
+    cx = e.clientX; cy = e.clientY;
+    cowCursor.style.left = cx + 'px';
+    cowCursor.style.top = cy + 'px';
+  });
+  document.addEventListener('mousedown', () => cowCursor.classList.add('clicked'));
+  document.addEventListener('mouseup', () => cowCursor.classList.remove('clicked'));
+
+  // Generate stars
+  const starsEl = document.getElementById('stars');
+  for (let i = 0; i < 80; i++) {
+    const s = document.createElement('div');
+    s.className = 'star';
+    const size = Math.random() * 2.5 + 0.5;
+    s.style.cssText = `
+      width:${size}px; height:${size}px;
+      left:${Math.random()*100}%;
+      top:${Math.random()*100}%;
+      animation-delay:${Math.random()*4}s;
+      animation-duration:${2+Math.random()*3}s;
+    `;
+    starsEl.appendChild(s);
+  }
+
+  // Build cow pattern grid
+  const patternEl = document.getElementById('patternGrid');
+  const emojis = ['🐄','🐄','🐄','🐂','🌾','🍼','🐄','🐄','🥛','🐄'];
+  const classes = ['black','white','white','black','white','black','white','white','black','white'];
+  let html = '';
+  for (let row = 0; row < 2; row++) {
+    html += `<div class="cow-pattern-row">`;
+    for (let col = 0; col < 16; col++) {
+      const i = (row * 7 + col) % emojis.length;
+      html += `<div class="pattern-cell ${classes[i]}">${emojis[i]}</div>`;
+    }
+    html += `</div>`;
+  }
+  patternEl.innerHTML = html;
+
+  // Scroll reveal
+  const reveals = document.querySelectorAll('.reveal');
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(el => obs.observe(el));
+
+  // Moo on click (optional fun)
+  document.addEventListener('dblclick', () => {
+    const moo = new Audio('data:audio/wav;base64,');
+    // Silent fallback — just animate cursor
+    cowCursor.style.transform = 'translate(-50%,-50%) scale(1.5) rotate(20deg)';
+    setTimeout(() => cowCursor.style.transform = 'translate(-50%,-50%)', 400);
+  });
+</script>
+</body>
+</html>
